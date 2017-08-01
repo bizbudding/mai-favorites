@@ -211,8 +211,8 @@ final class Mai_Recommendations_Setup {
 		);
 
 		$labels = array(
-			'singular' => 'Recommendation',
-			'plural'   => 'Recommended',
+			'singular' => __( 'Recommendation', 'mai-recommendations' ),
+			'plural'   => __( 'Recommended', 'mai-recommendations' ),
 			'slug'     => 'recommendations',
 		);
 
@@ -236,8 +236,8 @@ final class Mai_Recommendations_Setup {
 				'with_front' => true,
 			),
 		), array(
-			'singular' => 'Rec Category',
-			'plural'   => 'Rec Categories',
+			'singular' => __( 'Rec Category', 'mai-recommendations' ),
+			'plural'   => __( 'Rec Categories', 'mai-recommendations' ),
 		) );
 
 	}
