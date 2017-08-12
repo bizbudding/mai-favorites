@@ -1,1 +1,1 @@
-# mai-testimonials
+# Mai - Favorites
