@@ -3,7 +3,7 @@
 /**
  * Plugin Name:     Mai - Favorites
  * Plugin URI:      https://maipro.io
- * Description:     Manage and display you favorite external/affiliate links (products/services/etc) on your Mai Pro powered website.
+ * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Pro powered website.
  * Version:         1.0.0
  *
  * Author:          Mike Hemberger, BizBudding Inc
