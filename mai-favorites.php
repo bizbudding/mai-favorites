@@ -3,8 +3,8 @@
 /**
  * Plugin Name:     Mai - Favorites
  * Plugin URI:      https://maipro.io
- * Description:     Manage and display you favorite links (products/services/etc) on your Mai Pro powered website.
- * Version:         0.1.0
+ * Description:     Manage and display you favorite external/affiliate links (products/services/etc) on your Mai Pro powered website.
+ * Version:         1.0.0
  *
  * Author:          Mike Hemberger, BizBudding Inc
  * Author URI:      https://bizbudding.com
@@ -18,13 +18,13 @@ if ( ! class_exists( 'Mai_Favorites_Setup' ) ) :
 /**
  * Main Mai_Favorites_Setup Class.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 final class Mai_Favorites_Setup {
 
 	/**
 	 * @var    Mai_Favorites_Setup The one true Mai_Favorites_Setup
-	 * @since  0.1.0
+	 * @since  1.0.0
 	 */
 	private static $instance;
 
@@ -34,7 +34,7 @@ final class Mai_Favorites_Setup {
 	 * Insures that only one instance of Mai_Favorites_Setup exists in memory at any one
 	 * time. Also prevents needing to define globals all over the place.
 	 *
-	 * @since   0.1.0
+	 * @since   1.0.0
 	 * @static  var array $instance
 	 * @uses    Mai_Favorites_Setup::setup_constants() Setup the constants needed.
 	 * @uses    Mai_Favorites_Setup::includes() Include the required files.
@@ -59,7 +59,7 @@ final class Mai_Favorites_Setup {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
-	 * @since   0.1.0
+	 * @since   1.0.0
 	 * @access  protected
 	 * @return  void
 	 */
@@ -71,7 +71,7 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Disable unserializing of the class.
 	 *
-	 * @since   0.1.0
+	 * @since   1.0.0
 	 * @access  protected
 	 * @return  void
 	 */
@@ -84,14 +84,14 @@ final class Mai_Favorites_Setup {
 	 * Setup plugin constants.
 	 *
 	 * @access  private
-	 * @since   0.1.0
+	 * @since   1.0.0
 	 * @return  void
 	 */
 	private function setup_constants() {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '0.1.0' );
+			define( 'MAI_FAVORITES_VERSION', '1.0.0' );
 		}
 
 		// Plugin Folder Path.
@@ -116,34 +116,37 @@ final class Mai_Favorites_Setup {
 
 	}
 
+	/**
+	 * Setup the plugin.
+	 *
+	 * @return  void.
+	 */
 	public function setup() {
-		/**
-		 * Setup the updater.
-		 * This class/code is in Mai Pro Engine.
-		 * Since this is a dependent plugin, we don't include that code twice.
-		 *
-		 * @uses  https://github.com/YahnisElsts/plugin-update-checker/
-		 */
-		if ( class_exists( 'Puc_v4_Factory' ) ) {
-			$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/mai-favorites/', __FILE__, 'mai-favorites' );
-		}
 		// Bail if CMB2 is not running anywhere
 		if ( ! defined( 'CMB2_LOADED' ) ) {
 			add_action( 'admin_init',    array( $this, 'deactivate_plugin' ) );
 			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 			return;
 		}
-		// Includes
+		/**
+		 * Setup the updater.
+		 *
+		 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
+		 *
+		 * @return  void.
+		 */
 		require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
+		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/mai-favorites/', __FILE__, 'mai-favorites' );
 
 		// Run
 		$this->hooks();
 	}
 
-	function deactivate_plugin() {
-		deactivate_plugins( plugin_basename( __FILE__ ) );
-	}
-
+	/**
+	 * Display dependent plugin admin notice.
+	 *
+	 * @return void.
+	 */
 	function admin_notice() {
 		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai - Favorites requires the Mai Pro Engine plugin or CMB2 plugin in order to run. As a result, this plugin has been deactivated.', 'mai-favorites' ) );
 		if ( isset( $_GET['activate'] ) ) {
@@ -151,6 +154,11 @@ final class Mai_Favorites_Setup {
 		}
 	}
 
+	/**
+	 * Run the main plugin hooks and filters.
+	 *
+	 * @return void.
+	 */
 	public function hooks() {
 
 		register_activation_hook(   __FILE__,  array( $this, 'activate' ) );
@@ -163,20 +171,34 @@ final class Mai_Favorites_Setup {
 
 		add_filter( 'post_type_link',          array( $this, 'permalink' ), 10, 2 );
 		add_filter( 'shortcode_atts_grid',     array( $this, 'grid_atts' ), 8, 3 );
+		add_filter( 'genesis_attr_more-link',  array( $this, 'more_link_target' ) );
+		add_filter( 'mai_more_link_text',      array( $this, 'more_link_text' ), 10, 3 );
 
-		// Setup the updater
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/mai-favorites/', __FILE__, 'mai-favorites' );
 	}
 
+	/**
+	 * Plugin activation, includes flushing rewrite rules.
+	 *
+	 * @return void.
+	 */
 	public function activate() {
 		$this->register_content_types();
 		flush_rewrite_rules();
 	}
 
 	/**
+	 * Plugin deactivation.
+	 *
+	 * @return void.
+	 */
+	function deactivate_plugin() {
+		deactivate_plugins( plugin_basename( __FILE__ ) );
+	}
+
+	/**
 	 * Register post types and taxonomies.
 	 *
-	 * @return  void
+	 * @return void
 	 */
 	public function register_content_types() {
 
@@ -208,8 +230,7 @@ final class Mai_Favorites_Setup {
 					'parent_item_colon'          => null,
 				),
 				'public'            => false,
-				'rewrite'            => false,
-				// 'rewrite'           => array( 'slug' => _x( 'favorite-cat', 'favorite-cat slug' , 'mai-favorites' ), 'with_front' => false ),
+				'rewrite'           => false,
 				'show_admin_column' => true,
 				'show_in_menu'      => true,
 				'show_in_nav_menus' => false,
@@ -250,7 +271,6 @@ final class Mai_Favorites_Setup {
 				'show_in_nav_menus'  => false,
 				'show_ui'            => true,
 				'rewrite'            => false,
-				// 'rewrite'            => array( 'slug' => _x( 'favorites-category', 'mai-favorites' ), 'with_front' => false ),
 				'supports'           => array( 'title', 'excerpt', 'author', 'thumbnail' ),
 				'taxonomies'         => array( 'favorite_cat' ),
 			)
@@ -304,18 +324,20 @@ final class Mai_Favorites_Setup {
 			'remove_box_wrap' => true,
 		) );
 
-		// URL text field
+		// URL
 		$cmb->add_field( array(
 			'id'         => 'url',
 			'type'       => 'text_url',
-			'name'       => __( 'URL', 'mai-favorites' ),
+			'name'       => __( 'URL', 'mai-favorites' ) . '*',
 			'before'     => '<span style="display: inline-block;background: #f5f5f5;font-size: 18px;padding: 5px 4px 2px;margin: 1px -2px 1px 1px;border: 1px solid #ddd;vertical-align: top;" class="dashicons dashicons-admin-links"></span>',
 			'attributes' => array(
 				'style'       => 'width: 100%;',
 				'placeholder' => __( 'Enter URL here', 'mai-favorites' ),
+				'required'    => true,
 			),
 		) );
 
+		// Button text
 		$cmb->add_field( array(
 			'id'         => 'button_text',
 			'type'       => 'text',
@@ -328,39 +350,18 @@ final class Mai_Favorites_Setup {
 
 	}
 
+	/**
+	 * Maybe add custom CSS and filter the metabox text.
+	 *
+	 * @return  void.
+	 */
 	function maybe_do_gettext_filter() {
 		$screen = get_current_screen();
 		if ( 'favorite' !== $screen->post_type ) {
 			return;
 		}
-		add_action( 'admin_head',  array( $this, 'admin_css' ) );
-		add_filter( 'gettext',     array( $this, 'translate' ), 10, 3 );
-	}
-
-	/**
-	 * Change text for the post excerpt
-	 *
-	 * @since   0.1.0
-	 *
-	 * @param   string $translated_text
-	 * @param   string $text
-	 * @param   string $domain
-	 *
-	 * @return  string
-	 */
-	function translate( $translated_text, $text, $domain ) {
-		if ( 'default' !== $domain ) {
-			return $translated_text;
-		}
-		switch ( $translated_text ) {
-			case 'Excerpt' :
-				$translated_text = __( 'Description', 'mai-favorites' );
-			break;
-			case 'Excerpts are optional hand-crafted summaries of your content that can be used in your theme. <a href="%s">Learn more about manual excerpts</a>.' :
-				$translated_text = '';
-			break;
-		}
-		return $translated_text;
+		add_action( 'admin_head', array( $this, 'admin_css' ) );
+		add_filter( 'gettext',    array( $this, 'translate' ), 10, 3 );
 	}
 
 	/**
@@ -386,17 +387,42 @@ final class Mai_Favorites_Setup {
 	}
 
 	/**
+	 * Change text for the post excerpt
+	 *
+	 * @since   1.0.0
+	 *
+	 * @param   string $translated_text
+	 * @param   string $text
+	 * @param   string $domain
+	 *
+	 * @return  string
+	 */
+	function translate( $translated_text, $text, $domain ) {
+		if ( 'default' !== $domain ) {
+			return $translated_text;
+		}
+		switch ( $translated_text ) {
+			case 'Excerpt' :
+				$translated_text = __( 'Description', 'mai-favorites' );
+			break;
+			case 'Excerpts are optional hand-crafted summaries of your content that can be used in your theme. <a href="%s">Learn more about manual excerpts</a>.' :
+				$translated_text = '';
+			break;
+		}
+		return $translated_text;
+	}
+
+	/**
 	 * Use the 'url' custom field value for the permalink URL of all favorite posts.
+	 *
+	 * @return  string  The url/permalink.
 	 */
 	function permalink( $url, $post ) {
 		if ( 'favorite' !== $post->post_type ) {
 			return $url;
 		}
 		$favorite_url = get_post_meta( $post->ID, 'url', true );
-		if ( ! $favorite_url ) {
-			return $url;
-		}
-		return esc_url( $favorite_url );
+		return $favorite_url ? esc_url( $favorite_url ) : $url;
 	}
 
 	/**
@@ -419,11 +445,43 @@ final class Mai_Favorites_Setup {
 			$out['show'] = 'image, title, excerpt, more_link';
 		}
 
-		if ( ! isset( $atts['more_link_text'] ) ) {
-			$out['more_link_text'] = __( 'Learn More', 'mai-favorites' );
-		}
-
 		return $out;
+	}
+
+	/**
+	 * Add target="_blank" to more link
+	 *
+	 * @param   array  $attributes  The element attributes.
+	 *
+	 * @return  array  The modified attributes.
+	 */
+	function more_link_target( $attributes ) {
+		if ( 'favorite' !== get_post_type() ) {
+			return $attributes;
+		}
+		$attributes['target'] = '_blank';
+		return $attributes;
+	}
+
+	/**
+	 * Use button_text meta field value for more link text.
+	 *
+	 * @param   string     $text          The more link text.
+	 * @param   object|id  $object_or_id  The post/term object or id.
+	 * @param   string     $type          The type of object, currently only 'post' or 'term'.
+	 *
+	 * @return  string|HTML  Return more link HTML.
+	 */
+	function more_link_text( $text, $object_or_id, $type ) {
+		if ( 'post' !== $type ) {
+			return $text;
+		}
+		if ( 'favorite' !== get_post_type( $object_or_id ) ) {
+			return;
+		}
+		global $post;
+		$button_text = get_post_meta( $post->ID, 'button_text', true );
+		return $button_text ? esc_html( $button_text ) : __( 'Learn More', 'mai-favorites' );
 	}
 
 }
@@ -440,7 +498,7 @@ endif; // End if class_exists check.
  *
  * Example: <?php $plugin = Mai_Favorites(); ?>
  *
- * @since 0.1.0
+ * @since  1.0.0
  *
  * @return object|Mai_Favorites_Setup The one true Mai_Favorites_Setup Instance.
  */
