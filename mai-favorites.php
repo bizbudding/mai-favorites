@@ -119,9 +119,18 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Setup the plugin.
 	 *
-	 * @return  void.
+	 * @return  void
 	 */
 	public function setup() {
+		add_action( 'plugins_loaded', array( $this, 'init' ) );
+	}
+
+	/**
+	 * Initialize the plugin.
+	 *
+	 * @return  void
+	 */
+	public function init() {
 		// Bail if CMB2 is not running anywhere
 		if ( ! defined( 'CMB2_LOADED' ) ) {
 			add_action( 'admin_init',    array( $this, 'deactivate_plugin' ) );
@@ -133,9 +142,11 @@ final class Mai_Favorites_Setup {
 		 *
 		 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
 		 *
-		 * @return  void.
+		 * @return  void
 		 */
-		require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
+		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+			require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
+		}
 		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maiprowp/mai-favorites/', __FILE__, 'mai-favorites' );
 
 		// Run
@@ -145,7 +156,7 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Display dependent plugin admin notice.
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function admin_notice() {
 		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai - Favorites requires the Mai Pro Engine plugin or CMB2 plugin in order to run. As a result, this plugin has been deactivated.', 'mai-favorites' ) );
@@ -157,7 +168,7 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Run the main plugin hooks and filters.
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	public function hooks() {
 
@@ -179,7 +190,7 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Plugin activation, includes flushing rewrite rules.
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	public function activate() {
 		$this->register_content_types();
@@ -189,7 +200,7 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Plugin deactivation.
 	 *
-	 * @return void.
+	 * @return void
 	 */
 	function deactivate_plugin() {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
@@ -353,7 +364,7 @@ final class Mai_Favorites_Setup {
 	/**
 	 * Maybe add custom CSS and filter the metabox text.
 	 *
-	 * @return  void.
+	 * @return  void
 	 */
 	function maybe_do_gettext_filter() {
 		$screen = get_current_screen();
