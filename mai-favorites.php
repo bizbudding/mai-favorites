@@ -136,7 +136,7 @@ final class Mai_Favorites_Setup {
 		 * @return  void.
 		 */
 		require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/bizbudding/mai-favorites/', __FILE__, 'mai-favorites' );
+		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maiprowp/mai-favorites/', __FILE__, 'mai-favorites' );
 
 		// Run
 		$this->hooks();
