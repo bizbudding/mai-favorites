@@ -488,7 +488,7 @@ final class Mai_Favorites_Setup {
 			return $text;
 		}
 		if ( 'favorite' !== get_post_type( $object_or_id ) ) {
-			return;
+			return $text;
 		}
 		global $post;
 		$button_text = get_post_meta( $post->ID, 'button_text', true );
