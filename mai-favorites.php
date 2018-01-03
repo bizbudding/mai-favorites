@@ -4,7 +4,7 @@
  * Plugin Name:     Mai - Favorites
  * Plugin URI:      https://maipro.io
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Pro powered website.
- * Version:         1.0.0
+ * Version:         1.0.1
  *
  * Author:          Mike Hemberger, BizBudding Inc
  * Author URI:      https://bizbudding.com
@@ -18,13 +18,13 @@ if ( ! class_exists( 'Mai_Favorites_Setup' ) ) :
 /**
  * Main Mai_Favorites_Setup Class.
  *
- * @since 1.0.0
+ * @since 1
  */
 final class Mai_Favorites_Setup {
 
 	/**
 	 * @var    Mai_Favorites_Setup The one true Mai_Favorites_Setup
-	 * @since  1.0.0
+	 * @since  1
 	 */
 	private static $instance;
 
@@ -34,10 +34,9 @@ final class Mai_Favorites_Setup {
 	 * Insures that only one instance of Mai_Favorites_Setup exists in memory at any one
 	 * time. Also prevents needing to define globals all over the place.
 	 *
-	 * @since   1.0.0
+	 * @since   1
 	 * @static  var array $instance
 	 * @uses    Mai_Favorites_Setup::setup_constants() Setup the constants needed.
-	 * @uses    Mai_Favorites_Setup::includes() Include the required files.
 	 * @uses    Mai_Favorites_Setup::setup() Activate, deactivate, etc.
 	 * @see     Mai_Favorites()
 	 * @return  object | Mai_Favorites_Setup The one true Mai_Favorites_Setup
@@ -59,7 +58,7 @@ final class Mai_Favorites_Setup {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
-	 * @since   1.0.0
+	 * @since   1
 	 * @access  protected
 	 * @return  void
 	 */
@@ -91,7 +90,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.0.0' );
+			define( 'MAI_FAVORITES_VERSION', '1.0.1' );
 		}
 
 		// Plugin Folder Path.
@@ -146,9 +145,9 @@ final class Mai_Favorites_Setup {
 		 */
 		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
 			require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
+		} else {
+			$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maiprowp/mai-favorites/', __FILE__, 'mai-favorites' );
 		}
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maiprowp/mai-favorites/', __FILE__, 'mai-favorites' );
-
 		// Run
 		$this->hooks();
 	}
@@ -178,7 +177,7 @@ final class Mai_Favorites_Setup {
 		add_action( 'init',                    array( $this, 'register_content_types' ) );
 		add_action( 'restrict_manage_posts',   array( $this, 'taxonomy_filter' ) );
 		add_action( 'cmb2_admin_init',         array( $this, 'metabox' ) );
-		add_action( 'current_screen',          array( $this, 'maybe_do_gettext_filter' ) );
+		add_action( 'current_screen',          array( $this, 'maybe_do_admin_functions' ) );
 
 		add_filter( 'post_type_link',          array( $this, 'permalink' ), 10, 2 );
 		add_filter( 'shortcode_atts_grid',     array( $this, 'grid_atts' ), 8, 3 );
@@ -214,78 +213,74 @@ final class Mai_Favorites_Setup {
 	public function register_content_types() {
 
 		/***********************
-		 *  Custom Taxonomies  *
-		 ***********************/
-
-		register_taxonomy( 'favorite_cat', 'favorite',
-			apply_filters( 'mai_favorite_cat_args', array(
-				'exclude_from_search' => true,
-				'has_archive'         => false,
-				'hierarchical'        => true,
-				'labels' => array(
-					'name'                       => _x( 'Favorites Categories', 'taxonomy general name', 'mai-favorites' ),
-					'singular_name'              => _x( 'Favorite Category' , 'taxonomy singular name' , 'mai-favorites' ),
-					'search_items'               => __( 'Search Favorite Categories'                   , 'mai-favorites' ),
-					'popular_items'              => __( 'Popular Favorite Categories'                  , 'mai-favorites' ),
-					'all_items'                  => __( 'All Categories'                               , 'mai-favorites' ),
-					'edit_item'                  => __( 'Edit Favorite Category'                       , 'mai-favorites' ),
-					'update_item'                => __( 'Update Favorite Category'                     , 'mai-favorites' ),
-					'add_new_item'               => __( 'Add New Favorite Category'                    , 'mai-favorites' ),
-					'new_item_name'              => __( 'New Favorite Category Name'                   , 'mai-favorites' ),
-					'separate_items_with_commas' => __( 'Separate Favorite Categories with commas'     , 'mai-favorites' ),
-					'add_or_remove_items'        => __( 'Add or remove Favorite Categories'            , 'mai-favorites' ),
-					'choose_from_most_used'      => __( 'Choose from the most used Favorite Categories', 'mai-favorites' ),
-					'not_found'                  => __( 'No Favorite Categories found.'                , 'mai-favorites' ),
-					'menu_name'                  => __( 'Favorite Categories'                          , 'mai-favorites' ),
-					'parent_item'                => null,
-					'parent_item_colon'          => null,
-				),
-				'public'            => false,
-				'rewrite'           => false,
-				'show_admin_column' => true,
-				'show_in_menu'      => true,
-				'show_in_nav_menus' => false,
-				'show_tagcloud'     => false,
-				'show_ui'           => true,
-			)
-		));
-
-		/***********************
 		 *  Custom Post Types  *
 		 ***********************/
 
-		register_post_type( 'favorite',
-			apply_filters( 'mai_favorite_args', array(
-				'exclude_from_search' => false,
-				'has_archive'         => false,
-				'hierarchical'        => true,
-				'labels'              => array(
-					'name'               => _x( 'Favorites', 'post type general name' , 'mai-favorites' ),
-					'singular_name'      => _x( 'Favorite' , 'post type singular name', 'mai-favorites' ),
-					'menu_name'          => _x( 'Favorites', 'admin menu'             , 'mai-favorites' ),
-					'name_admin_bar'     => _x( 'Favorite' , 'add new on admin bar'   , 'mai-favorites' ),
-					'add_new'            => _x( 'Add New'  , 'Favorite'               , 'mai-favorites' ),
-					'add_new_item'       => __( 'Add New Favorite'                    , 'mai-favorites' ),
-					'new_item'           => __( 'New Favorite'                        , 'mai-favorites' ),
-					'edit_item'          => __( 'Edit Favorite'                       , 'mai-favorites' ),
-					'view_item'          => __( 'View Favorite'                       , 'mai-favorites' ),
-					'all_items'          => __( 'All Favorites'                       , 'mai-favorites' ),
-					'search_items'       => __( 'Search Favorites'                    , 'mai-favorites' ),
-					'parent_item_colon'  => __( 'Parent Favorites:'                   , 'mai-favorites' ),
-					'not_found'          => __( 'No Favorites found.'                 , 'mai-favorites' ),
-					'not_found_in_trash' => __( 'No Favorites found in Trash.'        , 'mai-favorites' )
-				),
-				'menu_icon'          => 'dashicons-star-filled',
-				'public'             => false,
-				'publicly_queryable' => false,
-				'show_in_menu'       => true,
-				'show_in_nav_menus'  => false,
-				'show_ui'            => true,
-				'rewrite'            => false,
-				'supports'           => array( 'title', 'excerpt', 'author', 'thumbnail' ),
-				'taxonomies'         => array( 'favorite_cat' ),
-			)
-		));
+		register_post_type( 'favorite',array(
+			'exclude_from_search' => false,
+			'has_archive'         => false,
+			'hierarchical'        => false,
+			'labels'              => array(
+				'name'               => _x( 'Favorites', 'Favorite general name'        , 'mai-favorites' ),
+				'singular_name'      => _x( 'Favorite' , 'Favorite singular name'       , 'mai-favorites' ),
+				'menu_name'          => _x( 'Favorites', 'Favorite admin menu'          , 'mai-favorites' ),
+				'name_admin_bar'     => _x( 'Favorite' , 'Favorite add new on admin bar', 'mai-favorites' ),
+				'add_new'            => _x( 'Add New'  , 'Favorite add new'             , 'mai-favorites' ),
+				'add_new_item'       => __( 'Add New Favorite'                          , 'mai-favorites' ),
+				'new_item'           => __( 'New Favorite'                              , 'mai-favorites' ),
+				'edit_item'          => __( 'Edit Favorite'                             , 'mai-favorites' ),
+				'view_item'          => __( 'View Favorite'                             , 'mai-favorites' ),
+				'all_items'          => __( 'All Favorites'                             , 'mai-favorites' ),
+				'search_items'       => __( 'Search Favorites'                          , 'mai-favorites' ),
+				'parent_item_colon'  => __( 'Parent Favorites:'                         , 'mai-favorites' ),
+				'not_found'          => __( 'No Favorites found.'                       , 'mai-favorites' ),
+				'not_found_in_trash' => __( 'No Favorites found in Trash.'              , 'mai-favorites' )
+			),
+			'menu_icon'          => 'dashicons-star-filled',
+			'public'             => false,
+			'publicly_queryable' => false,
+			'show_in_menu'       => true,
+			'show_in_nav_menus'  => false,
+			'show_ui'            => true,
+			'rewrite'            => false,
+			'supports'           => array( 'title', 'excerpt', 'author', 'thumbnail' ),
+			'taxonomies'         => array( 'favorite_cat' ),
+		) );
+
+		/***********************
+		 *  Custom Taxonomies  *
+		 ***********************/
+
+		register_taxonomy( 'favorite_cat', 'favorite', array(
+			'exclude_from_search' => true,
+			'has_archive'         => false,
+			'hierarchical'        => true,
+			'labels' => array(
+				'name'                       => _x( 'Favorites Categories', 'taxonomy general name', 'mai-favorites' ),
+				'singular_name'              => _x( 'Favorite Category' , 'taxonomy singular name' , 'mai-favorites' ),
+				'search_items'               => __( 'Search Favorite Categories'                   , 'mai-favorites' ),
+				'popular_items'              => __( 'Popular Favorite Categories'                  , 'mai-favorites' ),
+				'all_items'                  => __( 'All Categories'                               , 'mai-favorites' ),
+				'edit_item'                  => __( 'Edit Favorite Category'                       , 'mai-favorites' ),
+				'update_item'                => __( 'Update Favorite Category'                     , 'mai-favorites' ),
+				'add_new_item'               => __( 'Add New Favorite Category'                    , 'mai-favorites' ),
+				'new_item_name'              => __( 'New Favorite Category Name'                   , 'mai-favorites' ),
+				'separate_items_with_commas' => __( 'Separate Favorite Categories with commas'     , 'mai-favorites' ),
+				'add_or_remove_items'        => __( 'Add or remove Favorite Categories'            , 'mai-favorites' ),
+				'choose_from_most_used'      => __( 'Choose from the most used Favorite Categories', 'mai-favorites' ),
+				'not_found'                  => __( 'No Favorite Categories found.'                , 'mai-favorites' ),
+				'menu_name'                  => __( 'Favorite Categories'                          , 'mai-favorites' ),
+				'parent_item'                => null,
+				'parent_item_colon'          => null,
+			),
+			'public'            => false,
+			'rewrite'           => false,
+			'show_admin_column' => true,
+			'show_in_menu'      => true,
+			'show_in_nav_menus' => false,
+			'show_tagcloud'     => false,
+			'show_ui'           => true,
+		) );
 
 	}
 
@@ -305,15 +300,16 @@ final class Mai_Favorites_Setup {
 		$selected      = isset( $_GET[$taxonomy] ) ? $_GET[$taxonomy] : '';
 		$info_taxonomy = get_taxonomy( $taxonomy );
 		wp_dropdown_categories( array(
-			'hierarchical'    => true,
-			'hide_empty'      => true,
-			'name'            => $taxonomy,
-			'orderby'         => 'name',
-			'selected'        => $selected,
-			'show_count'      => true,
-			'show_option_all' => __( "All {$info_taxonomy->label}", 'mai-favorites' ),
-			'taxonomy'        => $taxonomy,
-			'value_field'     => 'slug',
+			'hierarchical'     => true,
+			'hide_empty'       => true,
+			'name'             => $taxonomy,
+			'orderby'          => 'name',
+			'selected'         => $selected,
+			'show_count'       => true,
+			'show_option_all'  => __( "All {$info_taxonomy->label}", 'mai-favorites' ),
+			'show_option_none' => __( 'All Categories', 'mai-favorites' ),
+			'taxonomy'         => $taxonomy,
+			'value_field'      => 'slug',
 		));
 	}
 
@@ -340,9 +336,8 @@ final class Mai_Favorites_Setup {
 			'id'         => 'url',
 			'type'       => 'text_url',
 			'name'       => __( 'URL', 'mai-favorites' ) . '*',
-			'before'     => '<span style="display: inline-block;background: #f5f5f5;font-size: 18px;padding: 5px 4px 2px;margin: 1px -2px 1px 1px;border: 1px solid #ddd;vertical-align: top;" class="dashicons dashicons-admin-links"></span>',
+			'before'     => '<span class="dashicons dashicons-admin-links"></span>',
 			'attributes' => array(
-				'style'       => 'width: 100%;',
 				'placeholder' => __( 'Enter URL here', 'mai-favorites' ),
 				'required'    => true,
 			),
@@ -354,7 +349,6 @@ final class Mai_Favorites_Setup {
 			'type'       => 'text',
 			'name'       => __( 'Button Text', 'mai-favorites' ),
 			'attributes' => array(
-				'style'       => 'width: 100%;',
 				'placeholder' => __( 'Learn More', 'mai-favorites' ),
 			),
 		) );
@@ -366,7 +360,7 @@ final class Mai_Favorites_Setup {
 	 *
 	 * @return  void
 	 */
-	function maybe_do_gettext_filter() {
+	function maybe_do_admin_functions() {
 		$screen = get_current_screen();
 		if ( 'favorite' !== $screen->post_type ) {
 			return;
@@ -388,10 +382,35 @@ final class Mai_Favorites_Setup {
 				margin-top: 16px;
 			}
 			#cmb2-metabox-mai_favorites .cmb-td {
-				display: flex;
+				display: -webkit-box;display: -ms-flexbox;display: flex;
+				-ms-flex-wrap: wrap;flex-wrap: wrap;
 				flex: 1 1 100%;
 				width: 100%;
 				max-width: 100%;
+			}
+			#cmb2-metabox-mai_favorites input {
+				-webkit-box-flex: 1;-ms-flex: 1 1 auto;flex: 1 1 auto;
+			}
+			#cmb2-metabox-mai_favorites input:focus::-webkit-input-placeholder { color:transparent; }
+			#cmb2-metabox-mai_favorites input:focus:-moz-placeholder { color:transparent; }
+			#cmb2-metabox-mai_favorites input:focus::-moz-placeholder { color:transparent; }
+			#cmb2-metabox-mai_favorites input:focus:-ms-input-placeholder { color:transparent; }
+			#cmb2-metabox-mai_favorites .dashicons {
+				height: auto;
+				background: #f5f5f5;
+				color: #666;
+				font-size: 18px;
+				line-height: 18px;
+				padding: 5px 3px 2px;
+				margin: 1px -2px 1px 0;
+				border: 1px solid #ddd;
+			}
+			#cmb2-metabox-mai_favorites .cmb2-metabox-description {
+				-webkit-box-flex: 1;-ms-flex: 1 0 100%;flex: 1 0 100%;
+				font-size: 12px;
+				font-style: normal;
+				margin: 4px 0 0;
+				padding: 0;
 			}
 		}
 		</style>';
@@ -437,7 +456,7 @@ final class Mai_Favorites_Setup {
 	}
 
 	/**
-	 * Filter the default args for [grid] shortcode when displaying testimonials.
+	 * Filter the default args for [grid] shortcode when displaying favorites.
 	 *
 	 * @param   array  $out    The modified attributes.
 	 * @param   array  $pairs  Entire list of supported attributes and their defaults.
@@ -447,7 +466,7 @@ final class Mai_Favorites_Setup {
 	 */
 	function grid_atts( $out, $pairs, $atts ) {
 
-		// Bail if not a testimonial
+		// Bail if not a favorite
 		if ( 'favorite' !== $atts['content'] ) {
 			return $out;
 		}
