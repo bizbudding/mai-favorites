@@ -4,7 +4,7 @@
  * Plugin Name:     Mai - Favorites
  * Plugin URI:      https://maipro.io
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Pro powered website.
- * Version:         1.0.0
+ * Version:         1.0.1
  *
  * Author:          Mike Hemberger, BizBudding Inc
  * Author URI:      https://bizbudding.com
@@ -18,13 +18,13 @@ if ( ! class_exists( 'Mai_Favorites_Setup' ) ) :
 /**
  * Main Mai_Favorites_Setup Class.
  *
- * @since 1.0.0
+ * @since 1
  */
 final class Mai_Favorites_Setup {
 
 	/**
 	 * @var    Mai_Favorites_Setup The one true Mai_Favorites_Setup
-	 * @since  1.0.0
+	 * @since  1
 	 */
 	private static $instance;
 
@@ -34,7 +34,7 @@ final class Mai_Favorites_Setup {
 	 * Insures that only one instance of Mai_Favorites_Setup exists in memory at any one
 	 * time. Also prevents needing to define globals all over the place.
 	 *
-	 * @since   1.0.0
+	 * @since   1
 	 * @static  var array $instance
 	 * @uses    Mai_Favorites_Setup::setup_constants() Setup the constants needed.
 	 * @uses    Mai_Favorites_Setup::setup() Activate, deactivate, etc.
@@ -58,7 +58,7 @@ final class Mai_Favorites_Setup {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
-	 * @since   1.0.0
+	 * @since   1
 	 * @access  protected
 	 * @return  void
 	 */
@@ -90,7 +90,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.0.0' );
+			define( 'MAI_FAVORITES_VERSION', '1.0.1' );
 		}
 
 		// Plugin Folder Path.
