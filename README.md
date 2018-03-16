@@ -1,1 +1,1 @@
-# Mai - Favorites
+# Mai Favorites

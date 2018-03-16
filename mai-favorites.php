@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Plugin Name:     Mai - Favorites
- * Plugin URI:      https://maipro.io
- * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Pro powered website.
- * Version:         1.0.1
+ * Plugin Name:     Mai Favorites
+ * Plugin URI:      https://maitheme.com
+ * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
+ * Version:         1.0.2
  *
  * Author:          Mike Hemberger, BizBudding Inc
  * Author URI:      https://bizbudding.com
@@ -90,7 +90,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.0.1' );
+			define( 'MAI_FAVORITES_VERSION', '1.0.2' );
 		}
 
 		// Plugin Folder Path.
@@ -130,12 +130,14 @@ final class Mai_Favorites_Setup {
 	 * @return  void
 	 */
 	public function init() {
+
 		// Bail if CMB2 is not running anywhere
 		if ( ! defined( 'CMB2_LOADED' ) ) {
 			add_action( 'admin_init',    array( $this, 'deactivate_plugin' ) );
 			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 			return;
 		}
+
 		/**
 		 * Setup the updater.
 		 *
@@ -144,10 +146,10 @@ final class Mai_Favorites_Setup {
 		 * @return  void
 		 */
 		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-			require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php';
-		} else {
-			$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maiprowp/mai-favorites/', __FILE__, 'mai-favorites' );
+			require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php'; // 4.4
 		}
+		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+
 		// Run
 		$this->hooks();
 	}
@@ -475,6 +477,10 @@ final class Mai_Favorites_Setup {
 			$out['show'] = 'image, title, excerpt, more_link';
 		}
 
+		if ( ! isset( $atts['more_link_text'] ) ) {
+			$out['more_link_text'] = __( 'Learn More', 'mai-favorites' );
+		}
+
 		return $out;
 	}
 
@@ -511,7 +517,7 @@ final class Mai_Favorites_Setup {
 		}
 		global $post;
 		$button_text = get_post_meta( $post->ID, 'button_text', true );
-		return $button_text ? esc_html( $button_text ) : __( 'Learn More', 'mai-favorites' );
+		return $button_text ? esc_html( $button_text ) : $text;
 	}
 
 }
