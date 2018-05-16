@@ -1,5 +1,7 @@
 ### Changelog
 
+* Changed: Only run updater in the admin.
+
 #### 1.0.2 (3/16/18)
 * Changed: Point to correct GH repo.
 * Changed: Update the updater to 4.4.
