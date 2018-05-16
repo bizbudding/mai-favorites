@@ -138,17 +138,19 @@ final class Mai_Favorites_Setup {
 			return;
 		}
 
-		/**
-		 * Setup the updater.
-		 *
-		 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
-		 *
-		 * @return  void
-		 */
-		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-			require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php'; // 4.4
+		if ( is_admin() ) {
+			/**
+			 * Setup the updater.
+			 *
+			 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
+			 *
+			 * @return  void
+			 */
+			if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+				require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php'; // 4.4
+			}
+			$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
 		}
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
 
 		// Run
 		$this->hooks();
