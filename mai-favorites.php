@@ -483,6 +483,10 @@ final class Mai_Favorites_Setup {
 			$out['more_link_text'] = __( 'Learn More', 'mai-favorites' );
 		}
 
+		if ( ! isset( $atts['target'] ) ) {
+			$out['target'] = '_blank';
+		}
+
 		return $out;
 	}
 
