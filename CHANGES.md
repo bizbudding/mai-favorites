@@ -1,6 +1,6 @@
 ### Changelog
 
-* Added: Set default grid target to "_blank".
+* Added: Set default grid target to "_blank" and rel to "noopener".
 * Changed: Only run updater in the admin.
 
 #### 1.0.2 (3/16/18)

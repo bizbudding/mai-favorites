@@ -24,7 +24,7 @@ final class Mai_Favorites_Setup {
 
 	/**
 	 * @var    Mai_Favorites_Setup The one true Mai_Favorites_Setup
-	 * @since  1
+	 * @since  1.0.0
 	 */
 	private static $instance;
 
@@ -34,7 +34,7 @@ final class Mai_Favorites_Setup {
 	 * Insures that only one instance of Mai_Favorites_Setup exists in memory at any one
 	 * time. Also prevents needing to define globals all over the place.
 	 *
-	 * @since   1
+	 * @since   1.0.0
 	 * @static  var array $instance
 	 * @uses    Mai_Favorites_Setup::setup_constants() Setup the constants needed.
 	 * @uses    Mai_Favorites_Setup::setup() Activate, deactivate, etc.
@@ -58,7 +58,7 @@ final class Mai_Favorites_Setup {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
-	 * @since   1
+	 * @since   1.0.0
 	 * @access  protected
 	 * @return  void
 	 */
@@ -185,7 +185,6 @@ final class Mai_Favorites_Setup {
 
 		add_filter( 'post_type_link',          array( $this, 'permalink' ), 10, 2 );
 		add_filter( 'shortcode_atts_grid',     array( $this, 'grid_atts' ), 8, 3 );
-		add_filter( 'genesis_attr_more-link',  array( $this, 'more_link_target' ) );
 		add_filter( 'mai_more_link_text',      array( $this, 'more_link_text' ), 10, 3 );
 
 	}
@@ -485,24 +484,12 @@ final class Mai_Favorites_Setup {
 
 		if ( ! isset( $atts['target'] ) ) {
 			$out['target'] = '_blank';
+			if ( ! isset( $atts['rel'] ) ) {
+				$out['rel'] = 'noopener';
+			}
 		}
 
 		return $out;
-	}
-
-	/**
-	 * Add target="_blank" to more link
-	 *
-	 * @param   array  $attributes  The element attributes.
-	 *
-	 * @return  array  The modified attributes.
-	 */
-	function more_link_target( $attributes ) {
-		if ( 'favorite' !== get_post_type() ) {
-			return $attributes;
-		}
-		$attributes['target'] = '_blank';
-		return $attributes;
 	}
 
 	/**
