@@ -1,5 +1,9 @@
 ### Changelog
 
+#### 1.1.0 (1/23/18)
+* Added: Set default grid target to "_blank" and rel to "noopener".
+* Changed: Only run updater in the admin.
+
 #### 1.0.2 (3/16/18)
 * Changed: Point to correct GH repo.
 * Changed: Update the updater to 4.4.

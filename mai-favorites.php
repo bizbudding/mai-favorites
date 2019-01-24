@@ -4,16 +4,14 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://maitheme.com
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         1.0.2
+ * Version:         1.1.0
  *
- * Author:          Mike Hemberger, BizBudding Inc
- * Author URI:      https://bizbudding.com
+ * Author:          MaiTheme.com
+ * Author URI:      https://maitheme.com
  */
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-if ( ! class_exists( 'Mai_Favorites_Setup' ) ) :
 
 /**
  * Main Mai_Favorites_Setup Class.
@@ -24,7 +22,7 @@ final class Mai_Favorites_Setup {
 
 	/**
 	 * @var    Mai_Favorites_Setup The one true Mai_Favorites_Setup
-	 * @since  1
+	 * @since  1.0.0
 	 */
 	private static $instance;
 
@@ -34,7 +32,7 @@ final class Mai_Favorites_Setup {
 	 * Insures that only one instance of Mai_Favorites_Setup exists in memory at any one
 	 * time. Also prevents needing to define globals all over the place.
 	 *
-	 * @since   1
+	 * @since   1.0.0
 	 * @static  var array $instance
 	 * @uses    Mai_Favorites_Setup::setup_constants() Setup the constants needed.
 	 * @uses    Mai_Favorites_Setup::setup() Activate, deactivate, etc.
@@ -58,7 +56,7 @@ final class Mai_Favorites_Setup {
 	 * The whole idea of the singleton design pattern is that there is a single
 	 * object therefore, we don't want the object to be cloned.
 	 *
-	 * @since   1
+	 * @since   1.0.0
 	 * @access  protected
 	 * @return  void
 	 */
@@ -90,7 +88,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.0.2' );
+			define( 'MAI_FAVORITES_VERSION', '1.1.0' );
 		}
 
 		// Plugin Folder Path.
@@ -121,6 +119,10 @@ final class Mai_Favorites_Setup {
 	 * @return  void
 	 */
 	public function setup() {
+
+		// Include vendor libraries.
+		require_once __DIR__ . '/vendor/autoload.php';
+
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 	}
 
@@ -132,23 +134,27 @@ final class Mai_Favorites_Setup {
 	public function init() {
 
 		// Bail if CMB2 is not running anywhere
-		if ( ! defined( 'CMB2_LOADED' ) ) {
+		if ( ! ( defined( 'CMB2_LOADED' ) || class_exists( 'Mai_Theme_Engine' ) ) ) {
 			add_action( 'admin_init',    array( $this, 'deactivate_plugin' ) );
 			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 			return;
 		}
 
-		/**
-		 * Setup the updater.
-		 *
-		 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
-		 *
-		 * @return  void
-		 */
-		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-			require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php'; // 4.4
+		if ( is_admin() ) {
+			/**
+			 * Setup the updater.
+			 *
+			 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
+			 *
+			 * @return  void
+			 */
+			if ( class_exists( 'Puc_v4_Factory' ) ) {
+				$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+			}
 		}
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+
+		// Includes.
+		$this->includes();
 
 		// Run
 		$this->hooks();
@@ -160,10 +166,21 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	function admin_notice() {
-		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai - Favorites requires the Mai Pro Engine plugin or CMB2 plugin in order to run. As a result, this plugin has been deactivated.', 'mai-favorites' ) );
+		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai Favorites requires Mai Theme Engine and CMB2 plugins. As a result, Mai Favorites plugin has been deactivated.', 'mai-favorites' ) );
+		// Remove "Plugin activated" notice.
 		if ( isset( $_GET['activate'] ) ) {
 			unset( $_GET['activate'] );
 		}
+	}
+
+	/**
+	 * Include required files.
+	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 * composer require cmb2/cmb2
+	 */
+	public function includes() {
+
 	}
 
 	/**
@@ -183,7 +200,6 @@ final class Mai_Favorites_Setup {
 
 		add_filter( 'post_type_link',          array( $this, 'permalink' ), 10, 2 );
 		add_filter( 'shortcode_atts_grid',     array( $this, 'grid_atts' ), 8, 3 );
-		add_filter( 'genesis_attr_more-link',  array( $this, 'more_link_target' ) );
 		add_filter( 'mai_more_link_text',      array( $this, 'more_link_text' ), 10, 3 );
 
 	}
@@ -481,22 +497,14 @@ final class Mai_Favorites_Setup {
 			$out['more_link_text'] = __( 'Learn More', 'mai-favorites' );
 		}
 
-		return $out;
-	}
-
-	/**
-	 * Add target="_blank" to more link
-	 *
-	 * @param   array  $attributes  The element attributes.
-	 *
-	 * @return  array  The modified attributes.
-	 */
-	function more_link_target( $attributes ) {
-		if ( 'favorite' !== get_post_type() ) {
-			return $attributes;
+		if ( ! isset( $atts['target'] ) ) {
+			$out['target'] = '_blank';
+			if ( ! isset( $atts['rel'] ) ) {
+				$out['rel'] = 'noopener';
+			}
 		}
-		$attributes['target'] = '_blank';
-		return $attributes;
+
+		return $out;
 	}
 
 	/**
@@ -521,7 +529,6 @@ final class Mai_Favorites_Setup {
 	}
 
 }
-endif; // End if class_exists check.
 
 /**
  * The main function for that returns Mai_Favorites_Setup
