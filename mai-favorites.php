@@ -4,16 +4,14 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://maitheme.com
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         1.0.2
+ * Version:         1.1.0
  *
- * Author:          Mike Hemberger, BizBudding Inc
- * Author URI:      https://bizbudding.com
+ * Author:          MaiTheme.com
+ * Author URI:      https://maitheme.com
  */
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
-
-if ( ! class_exists( 'Mai_Favorites_Setup' ) ) :
 
 /**
  * Main Mai_Favorites_Setup Class.
@@ -90,7 +88,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.0.2' );
+			define( 'MAI_FAVORITES_VERSION', '1.1.0' );
 		}
 
 		// Plugin Folder Path.
@@ -162,7 +160,8 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	function admin_notice() {
-		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai - Favorites requires the Mai Pro Engine plugin or CMB2 plugin in order to run. As a result, this plugin has been deactivated.', 'mai-favorites' ) );
+		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai Favorites requires Mai Theme Engine plugin. As a result, Mai Favorites plugin has been deactivated.', 'mai-favorites' ) );
+		// Remove "Plugin activated" notice.
 		if ( isset( $_GET['activate'] ) ) {
 			unset( $_GET['activate'] );
 		}
@@ -241,7 +240,7 @@ final class Mai_Favorites_Setup {
 			),
 			'menu_icon'          => 'dashicons-star-filled',
 			'public'             => false,
-			'publicly_queryable' => false,
+			'publicly_queryable' => true,
 			'show_in_menu'       => true,
 			'show_in_nav_menus'  => false,
 			'show_ui'            => true,
@@ -514,7 +513,6 @@ final class Mai_Favorites_Setup {
 	}
 
 }
-endif; // End if class_exists check.
 
 /**
  * The main function for that returns Mai_Favorites_Setup
