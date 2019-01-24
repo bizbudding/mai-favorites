@@ -119,6 +119,10 @@ final class Mai_Favorites_Setup {
 	 * @return  void
 	 */
 	public function setup() {
+
+		// Include vendor libraries.
+		require_once __DIR__ . '/vendor/autoload.php';
+
 		add_action( 'plugins_loaded', array( $this, 'init' ) );
 	}
 
@@ -130,7 +134,7 @@ final class Mai_Favorites_Setup {
 	public function init() {
 
 		// Bail if CMB2 is not running anywhere
-		if ( ! defined( 'CMB2_LOADED' ) ) {
+		if ( ! ( defined( 'CMB2_LOADED' ) || class_exists( 'Mai_Theme_Engine' ) ) ) {
 			add_action( 'admin_init',    array( $this, 'deactivate_plugin' ) );
 			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 			return;
@@ -144,11 +148,13 @@ final class Mai_Favorites_Setup {
 			 *
 			 * @return  void
 			 */
-			if ( ! class_exists( 'Puc_v4_Factory' ) ) {
-				require_once MAI_FAVORITES_PLUGIN_DIR . 'plugin-update-checker/plugin-update-checker.php'; // 4.4
+			if ( class_exists( 'Puc_v4_Factory' ) ) {
+				$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
 			}
-			$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
 		}
+
+		// Includes.
+		$this->includes();
 
 		// Run
 		$this->hooks();
@@ -160,11 +166,21 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	function admin_notice() {
-		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai Favorites requires Mai Theme Engine plugin. As a result, Mai Favorites plugin has been deactivated.', 'mai-favorites' ) );
+		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai Favorites requires Mai Theme Engine and CMB2 plugins. As a result, Mai Favorites plugin has been deactivated.', 'mai-favorites' ) );
 		// Remove "Plugin activated" notice.
 		if ( isset( $_GET['activate'] ) ) {
 			unset( $_GET['activate'] );
 		}
+	}
+
+	/**
+	 * Include required files.
+	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 * composer require cmb2/cmb2
+	 */
+	public function includes() {
+
 	}
 
 	/**
@@ -240,7 +256,7 @@ final class Mai_Favorites_Setup {
 			),
 			'menu_icon'          => 'dashicons-star-filled',
 			'public'             => false,
-			'publicly_queryable' => true,
+			'publicly_queryable' => false,
 			'show_in_menu'       => true,
 			'show_in_nav_menus'  => false,
 			'show_ui'            => true,
