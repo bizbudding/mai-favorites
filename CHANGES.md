@@ -1,5 +1,9 @@
 ### Changelog
 
+
+#### 1.2.0 (1/24/18)
+* Added: Page attributes support for easier ordering of favorites.
+
 #### 1.1.0 (1/23/18)
 * Added: Set default grid target to "_blank" and rel to "noopener".
 * Changed: Only run updater in the admin.
