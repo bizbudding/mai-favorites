@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://maitheme.com
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         1.1.0
+ * Version:         1.2.0
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -88,7 +88,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.1.0' );
+			define( 'MAI_FAVORITES_VERSION', '1.2.0' );
 		}
 
 		// Plugin Folder Path.
@@ -261,7 +261,7 @@ final class Mai_Favorites_Setup {
 			'show_in_nav_menus'  => false,
 			'show_ui'            => true,
 			'rewrite'            => false,
-			'supports'           => array( 'title', 'excerpt', 'author', 'thumbnail' ),
+			'supports'           => array( 'title', 'excerpt', 'page-attributes', 'author', 'thumbnail' ),
 			'taxonomies'         => array( 'favorite_cat' ),
 		) );
 
