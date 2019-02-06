@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://maitheme.com
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         1.2.0
+ * Version:         1.2.1
  *
  * Author:          MaiTheme.com
  * Author URI:      https://maitheme.com
@@ -62,7 +62,7 @@ final class Mai_Favorites_Setup {
 	 */
 	public function __clone() {
 		// Cloning instances of the class is forbidden.
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'mai-aec' ), '1.0' );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'mai-favorites' ), '1.0' );
 	}
 
 	/**
@@ -74,7 +74,7 @@ final class Mai_Favorites_Setup {
 	 */
 	public function __wakeup() {
 		// Unserializing instances of the class is forbidden.
-		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'mai-aec' ), '1.0' );
+		_doing_it_wrong( __FUNCTION__, __( 'Cheatin&#8217; huh?', 'mai-favorites' ), '1.0' );
 	}
 
 	/**
@@ -88,7 +88,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '1.2.0' );
+			define( 'MAI_FAVORITES_VERSION', '1.2.1' );
 		}
 
 		// Plugin Folder Path.
@@ -484,8 +484,8 @@ final class Mai_Favorites_Setup {
 	 */
 	function grid_atts( $out, $pairs, $atts ) {
 
-		// Bail if not a favorite
-		if ( 'favorite' !== $atts['content'] ) {
+		// Bail if not a favorite.
+		if ( ! isset( $atts['content'] ) || ( 'favorite' !== $atts['content'] ) ) {
 			return $out;
 		}
 
