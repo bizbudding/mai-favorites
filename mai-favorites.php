@@ -133,13 +133,6 @@ final class Mai_Favorites_Setup {
 	 */
 	public function init() {
 
-		// Bail if CMB2 is not running anywhere
-		if ( ! ( defined( 'CMB2_LOADED' ) || class_exists( 'Mai_Theme_Engine' ) ) ) {
-			add_action( 'admin_init',    array( $this, 'deactivate_plugin' ) );
-			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
-			return;
-		}
-
 		if ( is_admin() ) {
 			/**
 			 * Setup the updater.
@@ -153,34 +146,8 @@ final class Mai_Favorites_Setup {
 			}
 		}
 
-		// Includes.
-		$this->includes();
-
 		// Run
 		$this->hooks();
-	}
-
-	/**
-	 * Display dependent plugin admin notice.
-	 *
-	 * @return void
-	 */
-	function admin_notice() {
-		printf( '<div class="notice notice-warning is-dismissible"><p>%s</p></div>', __( 'Mai Favorites requires Mai Theme Engine and CMB2 plugins. As a result, Mai Favorites plugin has been deactivated.', 'mai-favorites' ) );
-		// Remove "Plugin activated" notice.
-		if ( isset( $_GET['activate'] ) ) {
-			unset( $_GET['activate'] );
-		}
-	}
-
-	/**
-	 * Include required files.
-	 *
-	 * composer require yahnis-elsts/plugin-update-checker
-	 * composer require cmb2/cmb2
-	 */
-	public function includes() {
-
 	}
 
 	/**
@@ -189,19 +156,16 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	public function hooks() {
-
 		register_activation_hook(   __FILE__,  array( $this, 'activate' ) );
 		register_deactivation_hook( __FILE__,  'flush_rewrite_rules' );
 
 		add_action( 'init',                    array( $this, 'register_content_types' ) );
 		add_action( 'restrict_manage_posts',   array( $this, 'taxonomy_filter' ) );
-		add_action( 'cmb2_admin_init',         array( $this, 'metabox' ) );
 		add_action( 'current_screen',          array( $this, 'maybe_do_admin_functions' ) );
 
 		add_filter( 'post_type_link',          array( $this, 'permalink' ), 10, 2 );
 		add_filter( 'shortcode_atts_grid',     array( $this, 'grid_atts' ), 8, 3 );
 		add_filter( 'mai_more_link_text',      array( $this, 'more_link_text' ), 10, 3 );
-
 	}
 
 	/**
@@ -212,15 +176,6 @@ final class Mai_Favorites_Setup {
 	public function activate() {
 		$this->register_content_types();
 		flush_rewrite_rules();
-	}
-
-	/**
-	 * Plugin deactivation.
-	 *
-	 * @return void
-	 */
-	function deactivate_plugin() {
-		deactivate_plugins( plugin_basename( __FILE__ ) );
 	}
 
 	/**
@@ -332,48 +287,6 @@ final class Mai_Favorites_Setup {
 	}
 
 	/**
-	 * Define the metabox and field configurations.
-	 *
-	 * @uses    CMB2
-	 *
-	 * @return  void
-	 */
-	function metabox() {
-
-		// Initiate the metabox
-		$cmb = new_cmb2_box( array(
-			'id'              => 'mai_favorites',
-			'object_types'    => array( 'favorite' ),
-			'context'         => 'after_title',
-			'show_names'      => true,
-			'remove_box_wrap' => true,
-		) );
-
-		// URL
-		$cmb->add_field( array(
-			'id'         => 'url',
-			'type'       => 'text_url',
-			'name'       => __( 'URL', 'mai-favorites' ) . '*',
-			'before'     => '<span class="dashicons dashicons-admin-links"></span>',
-			'attributes' => array(
-				'placeholder' => __( 'Enter URL here', 'mai-favorites' ),
-				'required'    => true,
-			),
-		) );
-
-		// Button text
-		$cmb->add_field( array(
-			'id'         => 'button_text',
-			'type'       => 'text',
-			'name'       => __( 'Button Text', 'mai-favorites' ),
-			'attributes' => array(
-				'placeholder' => __( 'Learn More', 'mai-favorites' ),
-			),
-		) );
-
-	}
-
-	/**
 	 * Maybe add custom CSS and filter the metabox text.
 	 *
 	 * @return  void
@@ -383,55 +296,7 @@ final class Mai_Favorites_Setup {
 		if ( 'favorite' !== $screen->post_type ) {
 			return;
 		}
-		add_action( 'admin_head', array( $this, 'admin_css' ) );
 		add_filter( 'gettext',    array( $this, 'translate' ), 10, 3 );
-	}
-
-	/**
-	 * Add custom CSS to <head>
-	 *
-	 * @since  1.0.0
-	 *
-	 * @return void
-	 */
-	function admin_css() {
-		echo '<style type="text/css">
-			.cmb2-context-wrap.cmb2-context-wrap-mai_favorites {
-				margin-top: 16px;
-			}
-			#cmb2-metabox-mai_favorites .cmb-td {
-				display: -webkit-box;display: -ms-flexbox;display: flex;
-				-ms-flex-wrap: wrap;flex-wrap: wrap;
-				flex: 1 1 100%;
-				width: 100%;
-				max-width: 100%;
-			}
-			#cmb2-metabox-mai_favorites input {
-				-webkit-box-flex: 1;-ms-flex: 1 1 auto;flex: 1 1 auto;
-			}
-			#cmb2-metabox-mai_favorites input:focus::-webkit-input-placeholder { color:transparent; }
-			#cmb2-metabox-mai_favorites input:focus:-moz-placeholder { color:transparent; }
-			#cmb2-metabox-mai_favorites input:focus::-moz-placeholder { color:transparent; }
-			#cmb2-metabox-mai_favorites input:focus:-ms-input-placeholder { color:transparent; }
-			#cmb2-metabox-mai_favorites .dashicons {
-				height: auto;
-				background: #f5f5f5;
-				color: #666;
-				font-size: 18px;
-				line-height: 18px;
-				padding: 5px 3px 2px;
-				margin: 1px -2px 1px 0;
-				border: 1px solid #ddd;
-			}
-			#cmb2-metabox-mai_favorites .cmb2-metabox-description {
-				-webkit-box-flex: 1;-ms-flex: 1 0 100%;flex: 1 0 100%;
-				font-size: 12px;
-				font-style: normal;
-				margin: 4px 0 0;
-				padding: 0;
-			}
-		}
-		</style>';
 	}
 
 	/**
@@ -551,3 +416,84 @@ function Mai_Favorites() {
 
 // Get Mai_Favorites Running.
 Mai_Favorites();
+
+
+
+add_action( 'add_meta_boxes', 'maifavorites_add_meta_box' );
+function maifavorites_add_meta_box( $post_type ) {
+	if ( 'favorite' !== $post_type ) {
+		return;
+	}
+
+	add_meta_box(
+		'maifavorites_meta_box',
+		esc_html__( 'URL & Button Text', 'mai-favorites' ),
+		'maifavorites_render_meta_box',
+		$post_type,
+		'normal',
+		'high'
+	);
+}
+
+/**
+ * Render Meta Box content.
+ *
+ * @param WP_Post $post The post object.
+ */
+function maifavorites_render_meta_box( $post ) {
+
+	// Add an nonce field so we can check for it later.
+	wp_nonce_field( 'maifavorites_meta_box', 'maifavorites_meta_box_nonce' );
+
+	// Use get_post_meta to retrieve an existing value from the database.
+	$button_url  = get_post_meta( $post->ID, 'url', true );
+	$button_text = get_post_meta( $post->ID, 'button_text', true );
+
+	// TODO: Get button text placeholder from v2 template (customizer) args.
+
+	// Display the form, using the current value.
+	printf( '<p style="margin-bottom:4px;"><label for="maifavorites_url">%s*</label></p>', esc_html__( 'URL', 'mai-favorites' ) );
+	printf( '<input style="display:block;width:100%%;" type="url" id="maifavorites_url" name="maifavorites_url" value="%s" placeholder="%s" required/>', esc_attr( $button_url ), __( 'Enter URL here', 'mai-favorites' ) );
+	printf( '<p style="margin-bottom:4px;"><label for="maifavorites_button_text">%s</label></p>', esc_html__( 'Button Text', 'mai-favorites' ) );
+	printf( '<input style="display:block;width:100%%;margin-bottom:1em;" type="text" id="maifavorites_button_text" name="maifavorites_button_text" value="%s" placeholder="%s" />', esc_attr( $button_text ), __( 'Learn More', 'mai-favorites' ) );
+}
+
+// add_action( 'save_post_favorite', 'maifavorites_save_meta_box' );
+/**
+ * Save the meta when the post is saved.
+ * We need to verify this came from the our screen and with proper authorization,
+ * because save_post can be triggered at other times.*
+ *
+ * @param int $post_id The ID of the post being saved.
+ */
+function maifavorites_save_meta_box( $post_id ) {
+	// Check if our nonce is set.
+	if ( ! isset( $_POST['maifavorites_meta_box_nonce'] ) ) {
+		return $post_id;
+	}
+
+	// Verify that the nonce is valid.
+	if ( ! wp_verify_nonce( $_POST['maifavorites_meta_box_nonce'], 'maifavorites_meta_box' ) ) {
+		return $post_id;
+	}
+
+	// Bail if an autosave.
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return $post_id;
+	}
+
+	// Check the user's permissions.
+	if ( ! current_user_can( 'edit_favorite', $post_id ) ) {
+		return $post_id;
+	}
+
+	// Update the meta fields.
+	update_post_meta( $post_id, 'url', esc_url( $_POST['maifavorites_url'] ) );
+	update_post_meta( $post_id, 'button_text', sanitize_text_field( $_POST['maifavorites_button_text'] ) );
+}
+
+add_filter( 'mai_grid_post_types', 'maifavorites_grid_post_type' );
+function maifavorites_grid_post_type( $post_types ) {
+	$post_types[] = 'favorite';
+	return $post_types;
+}
