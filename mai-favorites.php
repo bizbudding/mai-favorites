@@ -458,7 +458,7 @@ function maifavorites_render_meta_box( $post ) {
 	printf( '<input style="display:block;width:100%%;margin-bottom:1em;" type="text" id="maifavorites_button_text" name="maifavorites_button_text" value="%s" placeholder="%s" />', esc_attr( $button_text ), __( 'Learn More', 'mai-favorites' ) );
 }
 
-// add_action( 'save_post_favorite', 'maifavorites_save_meta_box' );
+add_action( 'save_post_favorite', 'maifavorites_save_meta_box' );
 /**
  * Save the meta when the post is saved.
  * We need to verify this came from the our screen and with proper authorization,
