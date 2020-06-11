@@ -123,7 +123,7 @@ final class Mai_Favorites_Setup {
 		// Include vendor libraries.
 		require_once __DIR__ . '/vendor/autoload.php';
 
-		add_action( 'plugins_loaded', array( $this, 'init' ) );
+		add_action( 'plugins_loaded', [ $this, 'init' ] );
 	}
 
 	/**
@@ -156,16 +156,16 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	public function hooks() {
-		register_activation_hook(   __FILE__,  array( $this, 'activate' ) );
+		register_activation_hook(   __FILE__,  [ $this, 'activate' ] );
 		register_deactivation_hook( __FILE__,  'flush_rewrite_rules' );
 
-		add_action( 'init',                    array( $this, 'register_content_types' ) );
-		add_action( 'restrict_manage_posts',   array( $this, 'taxonomy_filter' ) );
-		add_action( 'current_screen',          array( $this, 'maybe_do_admin_functions' ) );
+		add_action( 'init',                    [ $this, 'register_content_types' ] );
+		add_action( 'restrict_manage_posts',   [ $this, 'taxonomy_filter' ] );
+		add_action( 'current_screen',          [ $this, 'maybe_do_admin_functions' ] );
 
-		add_filter( 'post_type_link',          array( $this, 'permalink' ), 10, 2 );
-		add_filter( 'shortcode_atts_grid',     array( $this, 'grid_atts' ), 8, 3 );
-		add_filter( 'mai_more_link_text',      array( $this, 'more_link_text' ), 10, 3 );
+		add_filter( 'post_type_link',          [ $this, 'permalink' ], 10, 2 );
+		add_filter( 'shortcode_atts_grid',     [ $this, 'grid_atts' ], 8, 3 );
+		add_filter( 'mai_more_link_text',      [ $this, 'more_link_text' ], 10, 3 );
 	}
 
 	/**
@@ -189,11 +189,11 @@ final class Mai_Favorites_Setup {
 		 *  Custom Post Types  *
 		 ***********************/
 
-		register_post_type( 'favorite',array(
+		register_post_type( 'favorite', [
 			'exclude_from_search' => false,
 			'has_archive'         => false,
 			'hierarchical'        => false,
-			'labels'              => array(
+			'labels'              => [
 				'name'               => _x( 'Favorites', 'Favorite general name'        , 'mai-favorites' ),
 				'singular_name'      => _x( 'Favorite' , 'Favorite singular name'       , 'mai-favorites' ),
 				'menu_name'          => _x( 'Favorites', 'Favorite admin menu'          , 'mai-favorites' ),
@@ -208,7 +208,7 @@ final class Mai_Favorites_Setup {
 				'parent_item_colon'  => __( 'Parent Favorites:'                         , 'mai-favorites' ),
 				'not_found'          => __( 'No Favorites found.'                       , 'mai-favorites' ),
 				'not_found_in_trash' => __( 'No Favorites found in Trash.'              , 'mai-favorites' )
-			),
+			],
 			'menu_icon'          => 'dashicons-star-filled',
 			'public'             => false,
 			'publicly_queryable' => false,
@@ -216,19 +216,19 @@ final class Mai_Favorites_Setup {
 			'show_in_nav_menus'  => false,
 			'show_ui'            => true,
 			'rewrite'            => false,
-			'supports'           => array( 'title', 'excerpt', 'page-attributes', 'author', 'thumbnail' ),
-			'taxonomies'         => array( 'favorite_cat' ),
-		) );
+			'supports'           => [ 'title', 'excerpt', 'page-attributes', 'author', 'thumbnail' ],
+			'taxonomies'         => [ 'favorite_cat' ],
+		] );
 
 		/***********************
 		 *  Custom Taxonomies  *
 		 ***********************/
 
-		register_taxonomy( 'favorite_cat', 'favorite', array(
+		register_taxonomy( 'favorite_cat', 'favorite', [
 			'exclude_from_search' => true,
 			'has_archive'         => false,
 			'hierarchical'        => true,
-			'labels' => array(
+			'labels' => [
 				'name'                       => _x( 'Favorites Categories', 'taxonomy general name', 'mai-favorites' ),
 				'singular_name'              => _x( 'Favorite Category' , 'taxonomy singular name' , 'mai-favorites' ),
 				'search_items'               => __( 'Search Favorite Categories'                   , 'mai-favorites' ),
@@ -245,7 +245,7 @@ final class Mai_Favorites_Setup {
 				'menu_name'                  => __( 'Favorite Categories'                          , 'mai-favorites' ),
 				'parent_item'                => null,
 				'parent_item_colon'          => null,
-			),
+			],
 			'public'            => false,
 			'rewrite'           => false,
 			'show_admin_column' => true,
@@ -253,7 +253,7 @@ final class Mai_Favorites_Setup {
 			'show_in_nav_menus' => false,
 			'show_tagcloud'     => false,
 			'show_ui'           => true,
-		) );
+		] );
 
 	}
 
@@ -272,7 +272,7 @@ final class Mai_Favorites_Setup {
 		$taxonomy      = 'favorite_cat';
 		$selected      = isset( $_GET[$taxonomy] ) ? $_GET[$taxonomy] : '';
 		$info_taxonomy = get_taxonomy( $taxonomy );
-		wp_dropdown_categories( array(
+		wp_dropdown_categories( [
 			'hierarchical'     => true,
 			'hide_empty'       => true,
 			'name'             => $taxonomy,
@@ -283,7 +283,7 @@ final class Mai_Favorites_Setup {
 			'show_option_none' => __( 'All Categories', 'mai-favorites' ),
 			'taxonomy'         => $taxonomy,
 			'value_field'      => 'slug',
-		));
+		] );
 	}
 
 	/**
@@ -296,7 +296,7 @@ final class Mai_Favorites_Setup {
 		if ( 'favorite' !== $screen->post_type ) {
 			return;
 		}
-		add_filter( 'gettext',    array( $this, 'translate' ), 10, 3 );
+		add_filter( 'gettext', [ $this, 'translate' ], 10, 3 );
 	}
 
 	/**
