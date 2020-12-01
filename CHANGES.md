@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1 (12/1/20)
+* Changed: Plugin header consistency.
+* Changed: Update the updater.
+
 ## 2.0.0 (8/6/20)
 * Added: Support for Mai Engine (v2).
 * Changed: Remove dependency on CMB2, and use custom meta box.
