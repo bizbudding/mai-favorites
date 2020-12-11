@@ -7,7 +7,7 @@
  * Version:         2.0.2
  *
  * Author:          BizBudding
- * Author URI:      https://bizbudding.com/
+ * Author URI:      https://bizbudding.com
  */
 
 // Exit if accessed directly.
