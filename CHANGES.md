@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2 (12/11/20)
+* Changed: Plugin header consistency, again.
+
 ## 2.0.1 (12/1/20)
 * Changed: Plugin header consistency.
 * Changed: Update the updater.
