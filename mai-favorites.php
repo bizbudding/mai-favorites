@@ -147,6 +147,11 @@ final class Mai_Favorites_Setup {
 			 */
 			if ( class_exists( 'Puc_v4_Factory' ) ) {
 				$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+
+				// Maybe set github api token.
+				if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
+					$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
+				}
 			}
 		}
 
