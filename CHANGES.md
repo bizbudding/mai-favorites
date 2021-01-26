@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.3 (1/26/21)
+* Fixed: Mai Post Grid custom more link text now works as expected.
+
 ## 2.0.2 (12/11/20)
 * Changed: Plugin header consistency, again.
 
