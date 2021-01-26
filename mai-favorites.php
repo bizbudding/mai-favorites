@@ -121,11 +121,41 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	public function setup() {
-
 		// Include vendor libraries.
 		require_once __DIR__ . '/vendor/autoload.php';
 
+		add_action( 'admin_init', [ $this, 'updater' ] );
 		add_action( 'plugins_loaded', [ $this, 'init' ] );
+	}
+
+	/**
+	 * Setup the updater.
+	 *
+	 * composer require yahnis-elsts/plugin-update-checker
+	 *
+	 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
+	 *
+	 * @return  void
+	 */
+	public function updater() {
+
+		// Bail if current user cannot manage plugins.
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			return;
+		}
+
+		// Bail if plugin updater is not loaded.
+		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+			return;
+		}
+
+		// Setup the updater.
+		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+
+		// Maybe set github api token.
+		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
+			$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
+		}
 	}
 
 	/**
@@ -136,26 +166,6 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	public function init() {
-
-		if ( is_admin() ) {
-			/**
-			 * Setup the updater.
-			 *
-			 * @uses    https://github.com/YahnisElsts/plugin-update-checker/
-			 *
-			 * @return  void
-			 */
-			if ( class_exists( 'Puc_v4_Factory' ) ) {
-				$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
-
-				// Maybe set github api token.
-				if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
-					$updater->setAuthentication( MAI_GITHUB_API_TOKEN );
-				}
-			}
-		}
-
-		// Run
 		$this->hooks();
 	}
 
@@ -182,6 +192,7 @@ final class Mai_Favorites_Setup {
 
 		// v2 filters.
 		add_filter( 'mai_grid_post_types',                    [ $this, 'grid_post_types' ] );
+		add_filter( 'mai_grid_args',                          [ $this, 'grid_args' ] );
 		add_filter( 'genesis_attr_entry-image-link',          [ $this, 'link_attributes' ], 10, 3 );
 		add_filter( 'genesis_attr_entry-title-link',          [ $this, 'link_attributes' ], 10, 3 );
 		add_filter( 'genesis_attr_entry-more-link',           [ $this, 'link_attributes' ], 10, 3 );
@@ -537,6 +548,26 @@ final class Mai_Favorites_Setup {
 	}
 
 	/**
+	 * Sets default more link text for favorites.
+	 *
+	 * @since 2.0.3
+	 *
+	 * @param array $args The existing args
+	 *
+	 * @return array
+	 */
+	function grid_args( $args ) {
+		if ( ! isset( $args['type'] ) || 'post' !== $args['type'] ) {
+			return $args;
+		}
+		if ( ! ( isset( $args['post_type'] ) && ( 1 === count( $args['post_type'] ) ) && in_array( 'favorite', $args['post_type'] ) ) ) {
+			return $args;
+		}
+		$args['more_link_text'] = $args['more_link_text'] ?: esc_html__( 'Learn More', 'mai-favorites' );
+		return $args;
+	}
+
+	/**
 	 * Add target and rel attributes to favorite links.
 	 *
 	 * @since 2.0.0
@@ -577,7 +608,7 @@ final class Mai_Favorites_Setup {
 				return $text;
 			}
 		}
-		return esc_html__( 'Learn More', 'mai-favorites' );
+		return $content;
 	}
 
 	/**
@@ -592,7 +623,6 @@ final class Mai_Favorites_Setup {
 	function is_favorite( $args ) {
 		return isset( $args['params']['entry'], $args['params']['entry']->post_type ) && 'favorite' === $args['params']['entry']->post_type;
 	}
-
 }
 
 /**
