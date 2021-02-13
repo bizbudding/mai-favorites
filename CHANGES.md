@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.4 (2/13/21)
+* Added: Mai logo icon to updater.
+
 ## 2.0.3 (1/26/21)
 * Fixed: Mai Post Grid custom more link text now works as expected.
 
