@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.0 (4/15/21)
+* Added: New "nofollow" checkbox on Favorites to add "nofollow" rel attribute to the link.
+
 ## 2.0.4 (2/13/21)
 * Added: Mai logo icon to updater.
 
