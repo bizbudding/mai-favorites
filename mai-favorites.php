@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://bizbudding.com/products/mai-favorites/
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         2.0.4
+ * Version:         2.1.0
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
@@ -88,7 +88,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '2.0.4' );
+			define( 'MAI_FAVORITES_VERSION', '2.1.0' );
 		}
 
 		// Plugin Folder Path.
@@ -190,23 +190,30 @@ final class Mai_Favorites_Setup {
 		register_activation_hook(   __FILE__,  [ $this, 'activate' ] );
 		register_deactivation_hook( __FILE__,  'flush_rewrite_rules' );
 
-		add_action( 'init',                    [ $this, 'register_content_types' ] );
-		add_action( 'restrict_manage_posts',   [ $this, 'taxonomy_filter' ] );
-		add_action( 'current_screen',          [ $this, 'maybe_do_admin_functions' ] );
-		add_action( 'add_meta_boxes',          [ $this, 'add_meta_box' ] );
-		add_action( 'save_post_favorite',      [ $this, 'save_meta_box' ] );
+		add_action( 'init',                  [ $this, 'register_content_types' ] );
+		add_action( 'restrict_manage_posts', [ $this, 'taxonomy_filter' ] );
+		add_action( 'current_screen',        [ $this, 'maybe_do_admin_functions' ] );
+		add_action( 'add_meta_boxes',        [ $this, 'add_meta_box' ] );
+		add_action( 'save_post_favorite',    [ $this, 'save_meta_box' ] );
+		add_filter( 'post_type_link',        [ $this, 'permalink' ], 10, 2 );
+		add_action( 'after_setup_theme',     [ $this, 'version_filters' ] ); // plugins_loaded was too early to check for 'mai-engine'.
+	}
 
-		add_filter( 'post_type_link',          [ $this, 'permalink' ], 10, 2 );
-		add_filter( 'shortcode_atts_grid',     [ $this, 'grid_atts' ], 8, 3 );
-		add_filter( 'mai_more_link_text',      [ $this, 'more_link_text' ], 10, 3 );
-
-		// v2 filters.
-		add_filter( 'mai_grid_post_types',                    [ $this, 'grid_post_types' ] );
-		add_filter( 'mai_grid_args',                          [ $this, 'grid_args' ] );
-		add_filter( 'genesis_attr_entry-image-link',          [ $this, 'link_attributes' ], 10, 3 );
-		add_filter( 'genesis_attr_entry-title-link',          [ $this, 'link_attributes' ], 10, 3 );
-		add_filter( 'genesis_attr_entry-more-link',           [ $this, 'link_attributes' ], 10, 3 );
-		add_filter( 'genesis_markup_entry-more-link_content', [ $this, 'more_link_content' ], 10, 2 );
+	public function version_filters() {
+		// Version specific files.
+		if ( class_exists( 'Mai_Theme_Engine' ) ) {
+			// v1 filters.
+			add_filter( 'shortcode_atts_grid', [ $this, 'grid_atts' ], 8, 3 );
+			add_filter( 'mai_more_link_text',  [ $this, 'more_link_text' ], 10, 3 );
+		} elseif ( current_theme_supports( 'mai-engine' ) ) {
+			// v2 filters.
+			add_filter( 'mai_grid_post_types',                    [ $this, 'grid_post_types' ] );
+			add_filter( 'mai_grid_args',                          [ $this, 'grid_args' ] );
+			add_filter( 'genesis_attr_entry-image-link',          [ $this, 'link_attributes' ], 10, 3 );
+			add_filter( 'genesis_attr_entry-title-link',          [ $this, 'link_attributes' ], 10, 3 );
+			add_filter( 'genesis_attr_entry-more-link',           [ $this, 'link_attributes' ], 10, 3 );
+			add_filter( 'genesis_markup_entry-more-link_content', [ $this, 'more_link_content' ], 10, 2 );
+		}
 	}
 
 	/**
@@ -423,6 +430,17 @@ final class Mai_Favorites_Setup {
 		printf( '<input style="display:block;width:100%%;" type="url" id="maifavorites_url" name="maifavorites_url" value="%s" placeholder="%s" required/>', esc_attr( $button_url ), __( 'Enter URL here', 'mai-favorites' ) );
 		printf( '<p style="margin-bottom:4px;"><label for="maifavorites_button_text">%s</label></p>', esc_html__( 'Button Text', 'mai-favorites' ) );
 		printf( '<input style="display:block;width:100%%;margin-bottom:1em;" type="text" id="maifavorites_button_text" name="maifavorites_button_text" value="%s" placeholder="%s" />', esc_attr( $button_text ), esc_html__( 'Learn More', 'mai-favorites' ) );
+
+		if ( current_theme_supports( 'mai-engine' ) ) {
+			$nofollow = get_post_meta( $post->ID, 'nofollow', true );
+			$nofollow = $nofollow ? ' checked' : '';
+
+			printf( '<p><label for="maifavorites_nofollow"><span style="display:block;margin-bottom:4px;">%s</span>%s%s</label></p>',
+				esc_html__( 'Nofollow', 'mai-favorites' ),
+				sprintf( '<input type="checkbox" id="maifavorites_nofollow" name="maifavorites_nofollow[]"%s>', $nofollow ),
+				esc_html__( 'Add "nofollow" rel attribute to link', 'mai-favorites' )
+			);
+		}
 	}
 
 	/**
@@ -439,32 +457,53 @@ final class Mai_Favorites_Setup {
 	function save_meta_box( $post_id ) {
 		// Check if our nonce is set.
 		if ( ! isset( $_POST['maifavorites_meta_box_nonce'] ) ) {
-			return $post_id;
+			return;
 		}
 
 		// Verify that the nonce is valid.
 		if ( ! wp_verify_nonce( $_POST['maifavorites_meta_box_nonce'], 'maifavorites_meta_box' ) ) {
-			return $post_id;
+			return;
 		}
 
 		// Bail if an autosave.
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return $post_id;
+			return;
+		}
+
+		if ( wp_is_post_autosave( $post_id ) ) {
+			return;
+		}
+
+		if ( wp_is_post_revision( $post_id ) ) {
+			return;
 		}
 
 		// Check the user's permissions.
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
-			return $post_id;
+			return;
 		}
 
 		// Check if there was a multisite switch before.
 		if ( is_multisite() && ms_is_switched() ) {
-			return $post_id;
+			return;
 		}
 
-		// Update the meta fields.
-		update_post_meta( $post_id, 'url', esc_url( $_POST['maifavorites_url'] ) );
-		update_post_meta( $post_id, 'button_text', sanitize_text_field( $_POST['maifavorites_button_text'] ) );
+		$meta = [
+			'url'         => esc_url( $_POST['maifavorites_url'] ),
+			'button_text' => sanitize_text_field( $_POST['maifavorites_button_text'] ),
+		];
+
+		if ( current_theme_supports( 'mai-engine' ) ) {
+			$meta['nofollow'] = isset( $_POST['maifavorites_nofollow'] ) && $_POST['maifavorites_nofollow'] ? 1 : 0;
+		}
+
+		foreach ( $meta as $key => $value ) {
+			if ( $value ) {
+				update_post_meta( $post_id, $key, $value );
+			} else {
+				delete_post_meta( $post_id, $key );
+			}
+		}
 	}
 
 	/**
@@ -496,7 +535,6 @@ final class Mai_Favorites_Setup {
 	 * @return array The modified attributes.
 	 */
 	function grid_atts( $out, $pairs, $atts ) {
-
 		// Bail if not a favorite.
 		if ( ! isset( $atts['content'] ) || ( 'favorite' !== $atts['content'] ) ) {
 			return $out;
@@ -593,7 +631,14 @@ final class Mai_Favorites_Setup {
 			return $attributes;
 		}
 		$attributes['target'] = '_blank';
-		$attributes['rel']    = 'noopener nofollow';
+		$attributes['rel']    = 'noopener';
+		$entry                = isset( $args['params']['entry'] ) && $args['params']['entry'] ? $args['params']['entry'] : false;
+		if ( $entry && isset( $entry->ID ) ) {
+			$nofollow = get_post_meta( $entry->ID, 'nofollow', true );
+			if ( $nofollow ) {
+				$attributes['rel'] .= ' nofollow';
+			}
+		}
 		return $attributes;
 	}
 
