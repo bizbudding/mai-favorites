@@ -303,6 +303,7 @@ final class Mai_Favorites_Setup {
 			'show_admin_column' => true,
 			'show_in_menu'      => true,
 			'show_in_nav_menus' => false,
+			'show_in_rest'      => true, // For when taxonomy is added to a post type that uses the block editor.
 			'show_tagcloud'     => false,
 			'show_ui'           => true,
 		] );
