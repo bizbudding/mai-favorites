@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.2.0 (7/19/21)
+* Added: Now Favorite Categories can be registered to post types that use the block editor (via `register_taxonomy_for_object_type`).
+
 ## 2.1.0 (4/15/21)
 * Added: New "nofollow" checkbox on Favorites to add "nofollow" rel attribute to the link.
 
