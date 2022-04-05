@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.0 (4/5/22)
+* Changed: Post type is now public so it works out of the box with SearchWP and FacetWP and similar plugins. Singular views are still not enabled because publicly_queryable is still false.
+
 ## 2.2.0 (7/19/21)
 * Added: Now Favorite Categories can be registered to post types that use the block editor (via `register_taxonomy_for_object_type`).
 

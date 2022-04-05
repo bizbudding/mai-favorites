@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://bizbudding.com/products/mai-favorites/
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         2.2.0
+ * Version:         2.3.0
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
@@ -88,7 +88,7 @@ final class Mai_Favorites_Setup {
 
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '2.2.0' );
+			define( 'MAI_FAVORITES_VERSION', '2.3.0' );
 		}
 
 		// Plugin Folder Path.
@@ -195,6 +195,7 @@ final class Mai_Favorites_Setup {
 		add_action( 'current_screen',        [ $this, 'maybe_do_admin_functions' ] );
 		add_action( 'add_meta_boxes',        [ $this, 'add_meta_box' ] );
 		add_action( 'save_post_favorite',    [ $this, 'save_meta_box' ] );
+		add_filter( 'pre_get_posts',         [ $this, 'remove_from_search' ] );
 		add_filter( 'post_type_link',        [ $this, 'permalink' ], 10, 2 );
 		add_action( 'after_setup_theme',     [ $this, 'version_filters' ] ); // plugins_loaded was too early to check for 'mai-engine'.
 	}
@@ -242,7 +243,7 @@ final class Mai_Favorites_Setup {
 		 ***********************/
 
 		register_post_type( 'favorite', [
-			'exclude_from_search' => false,
+			'exclude_from_search' => false, // False here so it can show up in SearchWP/FacetWP options.
 			'has_archive'         => false,
 			'hierarchical'        => false,
 			'labels'              => [
@@ -262,8 +263,8 @@ final class Mai_Favorites_Setup {
 				'not_found_in_trash' => __( 'No Favorites found in Trash.'              , 'mai-favorites' )
 			],
 			'menu_icon'          => 'dashicons-star-filled',
-			'public'             => false,
-			'publicly_queryable' => false,
+			'public'             => true,  // Needs to be true for SearchWP/FacetWP.
+			'publicly_queryable' => false, // Hides from the front end. No singular view.
 			'show_in_menu'       => true,
 			'show_in_nav_menus'  => false,
 			'show_ui'            => true,
@@ -321,24 +322,29 @@ final class Mai_Favorites_Setup {
 	 */
 	function taxonomy_filter() {
 		global $typenow;
+
 		if ( $typenow !== 'favorite' ) {
 			return;
 		}
+
 		$taxonomy      = 'favorite_cat';
 		$selected      = isset( $_GET[$taxonomy] ) ? $_GET[$taxonomy] : '';
 		$info_taxonomy = get_taxonomy( $taxonomy );
-		wp_dropdown_categories( [
-			'hierarchical'     => true,
-			'hide_empty'       => true,
-			'name'             => $taxonomy,
-			'orderby'          => 'name',
-			'selected'         => $selected,
-			'show_count'       => true,
-			'show_option_all'  => __( "All {$info_taxonomy->label}", 'mai-favorites' ),
-			'show_option_none' => __( 'All Categories', 'mai-favorites' ),
-			'taxonomy'         => $taxonomy,
-			'value_field'      => 'slug',
-		] );
+
+		wp_dropdown_categories(
+			[
+				'hierarchical'     => true,
+				'hide_empty'       => true,
+				'name'             => $taxonomy,
+				'orderby'          => 'name',
+				'selected'         => $selected,
+				'show_count'       => true,
+				'show_option_all'  => __( "All {$info_taxonomy->label}", 'mai-favorites' ),
+				'show_option_none' => __( 'All Categories', 'mai-favorites' ),
+				'taxonomy'         => $taxonomy,
+				'value_field'      => 'slug',
+			]
+		);
 	}
 
 	/**
@@ -350,9 +356,11 @@ final class Mai_Favorites_Setup {
 	 */
 	function maybe_do_admin_functions() {
 		$screen = get_current_screen();
+
 		if ( 'favorite' !== $screen->post_type ) {
 			return;
 		}
+
 		add_filter( 'gettext', [ $this, 'translate' ], 10, 3 );
 	}
 
@@ -371,6 +379,7 @@ final class Mai_Favorites_Setup {
 		if ( 'default' !== $domain ) {
 			return $translated_text;
 		}
+
 		switch ( $translated_text ) {
 			case 'Excerpt' :
 				$translated_text = __( 'Description', 'mai-favorites' );
@@ -379,6 +388,7 @@ final class Mai_Favorites_Setup {
 				$translated_text = '';
 			break;
 		}
+
 		return $translated_text;
 	}
 
@@ -416,7 +426,6 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	function render_meta_box( $post ) {
-
 		// Add an nonce field so we can check for it later.
 		wp_nonce_field( 'maifavorites_meta_box', 'maifavorites_meta_box_nonce' );
 
@@ -508,6 +517,27 @@ final class Mai_Favorites_Setup {
 	}
 
 	/**
+	 * Remove testimonials from search results.
+	 * We leave 'exclude_from_search' as false when registering the post type
+	 * so it can work with SearchWP/FacetWP.
+	 *
+	 * @since 0.1.0
+	 *
+	 * @return  void
+	 */
+	function remove_from_search( $query ) {
+		if ( is_admin() || ! $query->is_search ) {
+			return;
+		}
+
+		global $wp_post_types;
+
+		if ( isset( $wp_post_types['favorite'] ) ) {
+			$wp_post_types['favorite']->exclude_from_search = true;
+		}
+	}
+
+	/**
 	 * Use the 'url' custom field value for the permalink URL of all favorite posts.
 	 *
 	 * @since 1.0.0
@@ -520,7 +550,9 @@ final class Mai_Favorites_Setup {
 		if ( 'favorite' !== $post->post_type ) {
 			return $url;
 		}
+
 		$favorite_url = get_post_meta( $post->ID, 'url', true );
+
 		return $favorite_url ? esc_url( $favorite_url ) : $url;
 	}
 
@@ -574,11 +606,15 @@ final class Mai_Favorites_Setup {
 		if ( 'post' !== $type ) {
 			return $text;
 		}
+
 		if ( 'favorite' !== get_post_type( $object_or_id ) ) {
 			return $text;
 		}
+
 		global $post;
+
 		$button_text = get_post_meta( $post->ID, 'button_text', true );
+
 		return $button_text ? esc_html( $button_text ) : $text;
 	}
 
@@ -593,6 +629,7 @@ final class Mai_Favorites_Setup {
 	 */
 	function grid_post_types( $post_types ) {
 		$post_types[] = 'favorite';
+
 		return $post_types;
 	}
 
@@ -631,11 +668,14 @@ final class Mai_Favorites_Setup {
 		if ( ! $this->is_favorite( $args ) ) {
 			return $attributes;
 		}
+
 		$attributes['target'] = '_blank';
 		$attributes['rel']    = 'noopener';
 		$entry                = isset( $args['params']['entry'] ) && $args['params']['entry'] ? $args['params']['entry'] : false;
+
 		if ( $entry && isset( $entry->ID ) ) {
 			$nofollow = get_post_meta( $entry->ID, 'nofollow', true );
+
 			if ( $nofollow ) {
 				$attributes['rel'] .= ' nofollow';
 			}
@@ -657,13 +697,17 @@ final class Mai_Favorites_Setup {
 		if ( ! $this->is_favorite( $args ) ) {
 			return $content;
 		}
+
 		$entry = $args['params']['entry'];
+
 		if ( isset( $entry->ID ) ) {
 			$text = get_post_meta( $entry->ID, 'button_text', true );
+
 			if ( $text ) {
 				return $text;
 			}
 		}
+
 		return $content;
 	}
 
@@ -696,9 +740,9 @@ final class Mai_Favorites_Setup {
  *
  * @return object|Mai_Favorites_Setup The one true Mai_Favorites_Setup Instance.
  */
-function Mai_Favorites() {
+function mai_favorites() {
 	return Mai_Favorites_Setup::instance();
 }
 
 // Get Mai_Favorites Running.
-Mai_Favorites();
+mai_favorites();
