@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.1 (6/20/23)
+* Fixed: Updater object not set.
+
 ## 2.4.0 (6/20/23)
 * Changed: Update the updater.
 
