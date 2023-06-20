@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://bizbudding.com/products/mai-favorites/
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         2.3.0
+ * Version:         2.4.0
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
@@ -12,6 +12,9 @@
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) exit;
+
+// Must be at the top of the file.
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 /**
  * Main Mai_Favorites_Setup Class.
@@ -85,10 +88,9 @@ final class Mai_Favorites_Setup {
 	 * @return void
 	 */
 	private function setup_constants() {
-
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '2.3.0' );
+			define( 'MAI_FAVORITES_VERSION', '2.4.0' );
 		}
 
 		// Plugin Folder Path.
@@ -110,7 +112,6 @@ final class Mai_Favorites_Setup {
 		if ( ! defined( 'MAI_FAVORITES_BASENAME' ) ) {
 			define( 'MAI_FAVORITES_BASENAME', dirname( plugin_basename( __FILE__ ) ) );
 		}
-
 	}
 
 	/**
@@ -124,7 +125,7 @@ final class Mai_Favorites_Setup {
 		// Include vendor libraries.
 		require_once __DIR__ . '/vendor/autoload.php';
 
-		add_action( 'admin_init', [ $this, 'updater' ] );
+		add_action( 'plugins_loaded', [ $this, 'updater' ], 12 );
 		add_action( 'plugins_loaded', [ $this, 'init' ] );
 	}
 
@@ -138,19 +139,12 @@ final class Mai_Favorites_Setup {
 	 * @return  void
 	 */
 	public function updater() {
-
-		// Bail if current user cannot manage plugins.
-		if ( ! current_user_can( 'install_plugins' ) ) {
-			return;
-		}
-
 		// Bail if plugin updater is not loaded.
-		if ( ! class_exists( 'Puc_v4_Factory' ) ) {
+		if ( ! class_exists( 'YahnisElsts\PluginUpdateChecker\v5\PucFactory' ) ) {
 			return;
 		}
 
-		// Setup the updater.
-		$updater = Puc_v4_Factory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+		PucFactory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
 
 		// Maybe set github api token.
 		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.0 (6/20/23)
+* Changed: Update the updater.
+
 ## 2.3.0 (4/5/22)
 * Changed: Post type is now public so it works out of the box with SearchWP and FacetWP and similar plugins. Singular views are still not enabled because publicly_queryable is still false.
 
