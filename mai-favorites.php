@@ -4,7 +4,7 @@
  * Plugin Name:     Mai Favorites
  * Plugin URI:      https://bizbudding.com/products/mai-favorites/
  * Description:     Manage and display your favorite external/affiliate links (products/services/etc) on your Mai Theme powered website.
- * Version:         2.4.0
+ * Version:         2.4.1
  *
  * Author:          BizBudding
  * Author URI:      https://bizbudding.com
@@ -90,7 +90,7 @@ final class Mai_Favorites_Setup {
 	private function setup_constants() {
 		// Plugin version.
 		if ( ! defined( 'MAI_FAVORITES_VERSION' ) ) {
-			define( 'MAI_FAVORITES_VERSION', '2.4.0' );
+			define( 'MAI_FAVORITES_VERSION', '2.4.1' );
 		}
 
 		// Plugin Folder Path.
@@ -144,7 +144,7 @@ final class Mai_Favorites_Setup {
 			return;
 		}
 
-		PucFactory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
+		$updater = PucFactory::buildUpdateChecker( 'https://github.com/maithemewp/mai-favorites/', __FILE__, 'mai-favorites' );
 
 		// Maybe set github api token.
 		if ( defined( 'MAI_GITHUB_API_TOKEN' ) ) {
