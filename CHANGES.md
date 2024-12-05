@@ -1,13 +1,16 @@
 # Changelog
 
+## 2.4.3 (12/5/24)
+* Changed: Updated the updater.
+
 ## 2.4.2 (11/27/23)
-* Changed: Update the updater.
+* Changed: Updated the updater.
 
 ## 2.4.1 (6/20/23)
 * Fixed: Updater object not set.
 
 ## 2.4.0 (6/20/23)
-* Changed: Update the updater.
+* Changed: Updated the updater.
 
 ## 2.3.0 (4/5/22)
 * Changed: Post type is now public so it works out of the box with SearchWP and FacetWP and similar plugins. Singular views are still not enabled because publicly_queryable is still false.
@@ -29,7 +32,7 @@
 
 ## 2.0.1 (12/1/20)
 * Changed: Plugin header consistency.
-* Changed: Update the updater.
+* Changed: Updated the updater.
 
 ## 2.0.0 (8/6/20)
 * Added: Support for Mai Engine (v2).
@@ -47,7 +50,7 @@
 
 ## 1.0.2 (3/16/18)
 * Changed: Point to correct GH repo.
-* Changed: Update the updater to 4.4.
+* Changed: Updated the updater to 4.4.
 * Fixed: More link text wasn't correctly falling back to more_link_text param in [grid]
 
 ## 1.0.1
